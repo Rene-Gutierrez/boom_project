@@ -18,19 +18,25 @@ boom_sampler <- function(A,
   y      <- y
   
   # Variable Initialization
-  xi <- 1
-  v  <- rep(1, P)
-  t2 <- 1
-  l2 <- rep(1, P)
+  xi <- rep(1, P)
+  v  <- matrix(data = 1, nrow = V, ncol = P)
+  t2 <- rep(1, P)
+  l2 <- matrix(data = 1, nrow = V, ncol = P)
   s2 <- 1
+  g  <- rep(1, P)
+  e2 <- rep(1, P)
   
   # Sample Variables
-  sam_B  <- matrix(data = NA, nrow = S, ncol = (P * V))
-  sam_l2 <- matrix(data = NA, nrow = S, ncol = (P * V))
-  sam_v  <- matrix(data = NA, nrow = S, ncol = (P * V))
-  sam_t2 <- numeric(length = S)
-  sam_xi <- numeric(length = S)
-  sam_s2 <- numeric(length = S)
+  sam_B     <- array(data = NA, dim = c(S, V, P))
+  sam_l2    <- array(data = NA, dim = c(S, V, P))
+  sam_l2_t2 <- array(data = NA, dim = c(S, V, P))
+  sam_v     <- array(data = NA, dim = c(S, V, P))
+  sam_g     <- matrix(data = NA, nrow = S, ncol = P)
+  sam_pg    <- matrix(data = NA, nrow = S, ncol = P)
+  sam_e2    <- matrix(data = NA, nrow = S, ncol = P)
+  sam_t2    <- matrix(data = NA, nrow = S, ncol = P)
+  sam_xi    <- matrix(data = NA, nrow = S, ncol = P)
+  sam_s2    <- numeric(length = S)
   
   #############################################################################
   # Sampling
@@ -48,13 +54,15 @@ boom_sampler <- function(A,
     # Samples B Structure
     ###########################################################################
     # Samples the Horseshoe Structure
-    out <- fast_horseshoe(y  = y,
-                          X  = X,
-                          xi = xi,
-                          v  = v,
-                          l2 = l2,
-                          t2 = t2,
-                          s2 = s2)
+    out <- fast_spike_horseshoe(y  = y,
+                                X  = X,
+                                xi = xi,
+                                v  = v,
+                                l2 = l2,
+                                t2 = t2,
+                                s2 = s2,
+                                g  = g,
+                                e2 = e2)
     # Assigns the values
     B  <- out$b
     s2 <- out$s2
@@ -62,14 +70,21 @@ boom_sampler <- function(A,
     t2 <- out$t2
     v  <- out$v
     xi <- out$xi
+    e2 <- out$e2
+    g  <- out$g
+    pg <- out$pg
     
     # Saves Variables
-    sam_B[s,]  <- B
-    sam_l2[s,] <- l2
-    sam_v[s,]  <- v
-    sam_t2[s]  <- t2
-    sam_xi[s]  <- xi
-    sam_s2[s]  <- s2
+    sam_B[s,,]     <- B
+    sam_l2[s,,]    <- l2
+    sam_l2_t2[s,,] <- t(t(l2) * t2)
+    sam_v[s,,]     <- v
+    sam_t2[s,]     <- t2
+    sam_xi[s,]     <- xi
+    sam_s2[s]      <- s2
+    sam_e2[s,]     <- e2
+    sam_g[s,]      <- g
+    sam_pg[s,]     <- pg
     
     ###########################################################################
     # Progress Bar Update
@@ -80,10 +95,14 @@ boom_sampler <- function(A,
   }
   
   # Returns
-  return(list(B  = sam_B,
-              s2 = sam_s2,
-              l2 = sam_l2,
-              t2 = sam_t2,
-              v  = sam_v,
-              xi = sam_xi))
+  return(list(B     = sam_B,
+              s2    = sam_s2,
+              l2    = sam_l2,
+              t2    = sam_t2,
+              v     = sam_v,
+              xi    = sam_xi,
+              g     = sam_g,
+              e2    = sam_e2,
+              l2_t2 = sam_l2_t2,
+              pg    = sam_pg))
 }
