@@ -53,10 +53,11 @@ data_generator <- function(P = 10,
   # A
   A <- array(data = rnorm(n    = n * P * P,
                           mean = 0,
-                          sd   = 1),
+                          sd   = 1 / 2),
              dim  = c(n, P, P))
   for(i in 1:n){
     diag(A[i,,]) <- 0
+    A[i,,]       <- A[i,,] + t(A[i,,])
   }
   # G
   G <- array(data = rnorm(n    = n * V * P,

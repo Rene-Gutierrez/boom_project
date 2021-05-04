@@ -20,7 +20,7 @@ fast_spike_horseshoe <- function(y,
   # Samples b (Fast)
   #############################################################################
   b <- fast_sampler(Phi = X / sqrt(s2),
-                    D   = c(t((1 - g) * e2 + t(l2) * g * t2)),
+                    D   = s2 * c(t((1 - g) * e2 + t(l2) * g * t2)),
                     a   = y / sqrt(s2))
   b <- matrix(data = b, nrow = V, ncol = P)
   #############################################################################
@@ -66,17 +66,17 @@ fast_spike_horseshoe <- function(y,
     } else {
       e2[i] <- 1 / rgamma(n     = 1,
                           shape = 1,
-                          rate  = 0.01)
+                          rate  = 1)
     }
   }
-  e2 <- rep(0.01, P)
+  #e2 <- rep(0.01, P)
   
   # Samples g
   pg <- rep(0, P)
   for(i in 1:P){
     p0   <- dnorm(x    = b[,i],
                   mean = 0,
-                  sd   = sqrt(s2 * e2),
+                  sd   = sqrt(s2 * e2[i]),
                   log  = TRUE)
     p1   <- dnorm(x    = b[,i],
                   mean = 0,

@@ -4,11 +4,11 @@ source('./fast_spike_horseshoe.R')
 source('./boom_sampler.R')
 
 data_out <- data_generator(P = 20,   # Number of Regions of Interest
-                           V = 30,  # Number of Voxels per region
-                           R = 2,    # Deapth of the Connectivity Matrix
-                           a = 0,    # Signal Connectivity Matrix
+                           V = 10,   # Number of Voxels per region
+                           R = 2,    # Depth of the Connectivity Matrix
+                           a = 3,   # Signal Connectivity Matrix
                            W = 2,    # Active Voxels per Region
-                           c = 1,   # Signal per Voxel
+                           c = 1,    # Signal per Voxel
                            Q = 5,    # Active Regions of Interest
                            s = 1,    # Regression Noise
                            n = 100)  # Number of Samples
