@@ -73,8 +73,9 @@ u_boom_iteration <- function(y,
   vm2 <- 1 / rgamma(n     = P * (P - 1) / 2,
                     shape = 1,
                     rate  = 1 / w[lower.tri(w)] + Theta[lower.tri(Theta)]^2 / (2 * s2 * r2))
-  m2[lower.tri(m2)] <- vm2
-  m2                <- m2 + t(m2)
+  m2[upper.tri(m2, diag = TRUE)] <- 0
+  m2[lower.tri(m2)]              <- vm2
+  m2                             <- m2 + t(m2)
   
   # Samples r2
   r2 <- 1 / rgamma(n     = 1,
@@ -86,9 +87,11 @@ u_boom_iteration <- function(y,
   vw <- 1 / rgamma(n     = P * (P - 1) / 2,
                    shape = 1,
                    rate  = 1 + 1 / m2[lower.tri(m2)])
-  w[lower.tri(w)] <- vw
-  w               <- w + t(w)
-  
+  print(vw[1])
+  w[upper.tri(w, diag = TRUE)] <- 0
+  w[lower.tri(w)]              <- vw
+  w                            <- w + t(w)
+  print(w[2,1])
   # Samples nu
   nu <- 1 / rgamma(n     = 1,
                    shape = 1,
