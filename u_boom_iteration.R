@@ -104,7 +104,7 @@ u_boom_iteration <- function(y,
       }
     }
   }
-
+  
   # Samples r2
   temp1 <- Theta[g == 1, g == 1]
   temp1 <- temp1[lower.tri(temp1)]
@@ -153,7 +153,7 @@ u_boom_iteration <- function(y,
   #   p0   <- sum(dnorm(x    = B[, i],
   #                     mean = 0,
   #                     sd   = sqrt(s2 * e2),
-  #                     log  = TRUE)) + log(1/2) + 
+  #                     log  = TRUE)) + log(1/2) +
   #     sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
   #               mean = 0,
   #               sd   = m2,
@@ -161,7 +161,7 @@ u_boom_iteration <- function(y,
   #   p1   <- sum(dnorm(x    = B[, i],
   #                     mean = 0,
   #                     sd   = sqrt(s2 * t2 * l2[, i]),
-  #                     log  = TRUE)) + log(1/2) + 
+  #                     log  = TRUE)) + log(1/2) +
   #     sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
   #               mean = 0,
   #               sd   = M2,
