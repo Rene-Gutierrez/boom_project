@@ -28,7 +28,13 @@ u_boom_iteration <- function(y,
   # Samples B and Theta
   #############################################################################
   # Prior Diagonal
-  Lam <- c(t2 * c(l2), r2 * c(m2[lower.tri(m2)]))
+  temp1 <- c(t(t(l2) * g + (1 - g) * e2))
+  temp2 <- (m2 * (g %*% t(g)) + (1 - (g %*% t(g))) * o2)[lower.tri(m2)]
+  # print(t(t(l2) * g + (1 - g) * e2))
+  # print((m2 * (g %*% t(g)) + (1 - (g %*% t(g))) * o2))
+  # print(temp1)
+  # print(temp2)
+  Lam   <- c(t2 * temp1, r2 * temp2)
   # Fast Sampling
   b <- fast_sampler(Phi = X / sqrt(s2),
                     D   = s2 * Lam,
@@ -89,7 +95,7 @@ u_boom_iteration <- function(y,
         m2[i, j] <- 1 / rgamma(n     = 1,
                                shape = 1,
                                rate  = 1 / w[i, j] + Theta[i, j]^2 / (2 * s2 * r2))
-        m2[j, i] <- m2[i, j] 
+        m2[j, i] <- m2[i, j]
       } else {
         m2[i, j] <- 1 / rgamma(n     = 1,
                                shape = 1 / 2,
@@ -98,7 +104,7 @@ u_boom_iteration <- function(y,
       }
     }
   }
-  
+
   # Samples r2
   temp1 <- Theta[g == 1, g == 1]
   temp1 <- temp1[lower.tri(temp1)]
@@ -131,10 +137,13 @@ u_boom_iteration <- function(y,
   #############################################################################
   # Samples s2
   #############################################################################
-  Lam <- c(t2 * c(l2), r2 * c(m2[lower.tri(m2)]))
+  temp1 <- c(t(t(l2) * g + (1 - g) * e2))
+  temp2 <- (m2 * (g %*% t(g)) + (1 - (g %*% t(g))) * o2)[lower.tri(m2)]
+  Lam   <- c(t2 * temp1, r2 * temp2)
   s2 <- 1 / rgamma(n     = 1,
                    shape = (n + P * V + P * (P - 1) / 2) / 2,
-                   rate  = crossprod(x = y - X %*% b) / 2 + t(b / Lam) %*% b / 2)
+                   rate  = crossprod(x = y - X %*% b) / 2 +
+                     t(b[Lam != 0] / Lam[Lam != 0]) %*% b[Lam != 0] / 2)
   
   #############################################################################
   # Samples g
@@ -168,8 +177,7 @@ u_boom_iteration <- function(y,
   #                  prob = p1)
   #   pg[i] <- p1
   # }
-  g <- rep(1, P)
-  
+  g <- c(rep(1, QQ), rep(0, P - QQ))
   #############################################################################
   # Returns the Samples
   #############################################################################
@@ -186,5 +194,6 @@ u_boom_iteration <- function(y,
               s2     = s2,
               g      = g,
               pg     = pg,
+              D      = Lam,
               flag   = flag))
 } 
