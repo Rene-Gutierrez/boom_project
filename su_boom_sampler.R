@@ -30,7 +30,8 @@ su_boom_sampler <- function(A,
   t2       <- 1
   xi       <- 1
   s2       <- 1
-  gg       <- matrix(data = 1, nrow = P, ncol = P)
+  g        <- c(rep(1, QQ), rep(0, P - QQ))
+  #g        <- rep(0, P)
   
   # Sample Variables
   sam_B        <- array(data = NA, dim = c(S, V, P))
@@ -42,7 +43,6 @@ su_boom_sampler <- function(A,
   sam_t2       <- numeric(length = S)
   sam_xi       <- numeric(length = S)
   sam_Theta    <- array(data = NA, dim = c(S, P, P))
-  gg           <- array(data = NA, dim = c(S, P, P))
   sam_s2       <- numeric(length = S)
   sam_g        <- matrix(data = NA, nrow = S, ncol = P)
   sam_pg       <- matrix(data = NA, nrow = S, ncol = P)
@@ -73,7 +73,7 @@ su_boom_sampler <- function(A,
                              c2 = c2,
                              m2 = m2,
                              s2 = s2,
-                             gg = gg,
+                             g  = g,
                              e2 = e2)
     # Assigns and Distributes the values
     # B Structure
@@ -84,7 +84,6 @@ su_boom_sampler <- function(A,
     xi    <- out$xi
     # Theta Structure
     Theta <- out$Theta
-    gg    <- out$gg
     # Error
     s2 <- out$s2
     # Sparsity Structure
@@ -103,7 +102,6 @@ su_boom_sampler <- function(A,
     sam_t2[s]         <- t2
     sam_xi[s]         <- xi
     sam_Theta[s,,]    <- Theta
-    sam_gg[s,,]       <- gg
     sam_s2[s]         <- s2
     sam_g[s,]         <- g
     sam_pg[s,]        <- pg
@@ -127,7 +125,6 @@ su_boom_sampler <- function(A,
               t2       = sam_t2,
               xi       = sam_xi,
               Theta    = sam_Theta,
-              gg       = sam_gg,
               s2       = sam_s2,
               g        = sam_g,
               pg       = sam_pg,
