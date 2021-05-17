@@ -8,8 +8,8 @@ su_boom_iteration <- function(y,
                               v,  #
                               c2, # Spike & Slab Structure for Theta
                               m2, #
+                              gg, #
                               s2,
-                              g,
                               e2){
   #############################################################################
   # Set-Up
@@ -24,9 +24,11 @@ su_boom_iteration <- function(y,
   #############################################################################
   # Samples B and Theta
   #############################################################################
+  # Generates g
+  g     <- 1 - apply(X = 1 - gg, MARGIN = 1, FUN = prod)
   # Prior Diagonal
-  temp1 <- c(t2 * t(t(l2) * g + (1 - g) * e2))
-  temp2 <- (c2 * m2 * (g %*% t(g)) + (1 - (g %*% t(g))) * m2)[lower.tri((g %*% t(g)))]
+  temp1 <- s2 * c(t2 * t(t(l2) * g + (1 - g) * e2))
+  temp2 <- (c2 * m2 * gg + (1 - gg) * m2)[lower.tri(gg)]
   Lam   <- c(temp1, temp2)
   # Fast Sampling
   b <- fast_sampler(Phi = X / sqrt(s2),
@@ -46,7 +48,7 @@ su_boom_iteration <- function(y,
     if(g[i] == 1){
       l2[, i] <- 1 / rgamma(n     = V,
                             shape = 1,
-                            rate  = 1 / v[, i] + B[, i]^2 / (2 * t2))
+                            rate  = 1 / v[, i] + B[, i]^2 / (2 * s2 * t2))
     } else {
       l2[, i] <- 1 / rgamma(n     = V,
                             shape = 1 / 2,
@@ -59,7 +61,7 @@ su_boom_iteration <- function(y,
     t2 <- 1 / rgamma(n     = 1,
                      shape = (sum(g) * V + 1) / 2,
                      rate  = 1 / xi +
-                       sum(Lambda(M = B^2, g = g, a = 0) / (2 * l2)))
+                       sum(Lambda(M = B^2, g = g, a = 0) / (2 * s2 * l2)))
   } else {
     t2 <- 1 / rgamma(n     = 1,
                      shape = 1 / 2,
@@ -81,15 +83,16 @@ su_boom_iteration <- function(y,
   #############################################################################
   # Spike & Slab Structure for Theta
   #############################################################################
-
+  
   #############################################################################
   # Samples s2
   #############################################################################
   temp1 <- c(t2 * t(t(l2) * g + (1 - g) * e2))
   Lam   <- c(temp1)
   s2 <- 1 / rgamma(n     = 1,
-                   shape = (n) / 2,
-                   rate  = crossprod(x = y - X %*% b) / 2)
+                   shape = (n + P * V) / 2,
+                   rate  = crossprod(x = y - X %*% b) / 2 +
+                     t(c(B)[Lam != 0] / Lam[Lam != 0]) %*% c(B)[Lam != 0] / 2)
   
   #############################################################################
   # Samples g
@@ -121,7 +124,7 @@ su_boom_iteration <- function(y,
     #                   log  = TRUE)))
     p0   <- sum(dnorm(x    = B[, i],
                       mean = 0,
-                      sd   = sqrt(e2),
+                      sd   = sqrt(s2 * e2),
                       log  = TRUE)) + log(1/2) +
       sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
                 mean = 0,
@@ -150,7 +153,7 @@ su_boom_iteration <- function(y,
     #                   log  = TRUE)))
     p1   <- sum(dnorm(x    = B[, i],
                       mean = 0,
-                      sd   = sqrt(t2 * l2[, i]),
+                      sd   = sqrt(s2 * t2 * l2[, i]),
                       log  = TRUE)) + log(1/2) +
       sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
                 mean = 0,
@@ -187,4 +190,4 @@ su_boom_iteration <- function(y,
               pg     = pg,
               D      = Lam,
               flag   = flag))
-} 
+}
