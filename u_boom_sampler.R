@@ -3,7 +3,9 @@
 u_boom_sampler <- function(A,
                            G,
                            y,
-                           S){
+                           S,
+                           e2,
+                           o2){
   #############################################################################
   # Set-Up
   #############################################################################
@@ -33,12 +35,14 @@ u_boom_sampler <- function(A,
   r2       <- 1
   nu       <- 1
   s2       <- 1
+  g        <- rep(1, P)
   
   # Sample Variables
   sam_B        <- array(data = NA, dim = c(S, V, P))
   sam_l2       <- array(data = NA, dim = c(S, V, P))
   sam_l2_t2_s2 <- array(data = NA, dim = c(S, V, P))
   sam_l2_t2    <- array(data = NA, dim = c(S, V, P))
+  sam_e2_s2    <- array(data = NA, dim = c(S, V, P))
   sam_v        <- array(data = NA, dim = c(S, V, P))
   sam_t2       <- numeric(length = S)
   sam_xi       <- numeric(length = S)
@@ -46,12 +50,14 @@ u_boom_sampler <- function(A,
   sam_m2       <- array(data = NA, dim = c(S, P, P))
   sam_m2_r2_s2 <- array(data = NA, dim = c(S, P, P))
   sam_m2_r2    <- array(data = NA, dim = c(S, P, P))
+  sam_o2_s2    <- array(data = NA, dim = c(S, P, P))
   sam_w        <- array(data = NA, dim = c(S, P, P))
   sam_r2       <- numeric(length = S)
   sam_nu       <- numeric(length = S)
   sam_s2       <- numeric(length = S)
   sam_g        <- matrix(data = NA, nrow = S, ncol = P)
   sam_pg       <- matrix(data = NA, nrow = S, ncol = P)
+  sam_D        <- matrix(data = NA, nrow = S, ncol = P * V + (P - 1) * P / 2)
   
   #############################################################################
   # Sampling
@@ -80,9 +86,9 @@ u_boom_sampler <- function(A,
                             r2 = r2,
                             nu = nu,
                             s2 = s2,
-                            g  = rep(1, P),
-                            e2 = 1,
-                            o2 = 1)
+                            g  = g,
+                            e2 = e2,
+                            o2 = o2)
     # Assigns and Distributes the values
     # B Structure
     B     <- out$B
@@ -101,12 +107,15 @@ u_boom_sampler <- function(A,
     # Sparsity Structure
     g  <- out$g
     pg <- out$pg
+    # Coefficient Priors
+    D  <- out$D
     
     # Saves Variables
     sam_B[s,,]        <- B
     sam_l2[s,,]       <- l2
     sam_l2_t2_s2[s,,] <- l2 * t2 * s2
     sam_l2_t2[s,,]    <- l2 * t2
+    sam_e2_s2[s,,]    <- e2 * s2
     sam_v[s,,]        <- v
     sam_t2[s]         <- t2
     sam_xi[s]         <- xi
@@ -114,12 +123,14 @@ u_boom_sampler <- function(A,
     sam_m2[s,,]       <- m2
     sam_m2_r2_s2[s,,] <- m2 * r2 * s2
     sam_m2_r2[s,,]    <- m2 * r2
+    sam_o2_s2[s,,]    <- o2 * s2
     sam_w[s,,]        <- w
     sam_r2[s]         <- r2
     sam_nu[s]         <- nu
     sam_s2[s]         <- s2
     sam_g[s,]         <- g
     sam_pg[s,]        <- pg
+    sam_D[s,]         <- D
     
     ###########################################################################
     # Progress Bar Update
@@ -134,6 +145,7 @@ u_boom_sampler <- function(A,
               l2       = sam_l2,
               l2_t2_s2 = sam_l2_t2_s2,
               l2_t2    = sam_l2_t2,
+              e2_s2    = sam_e2_s2,
               v        = sam_v,
               t2       = sam_t2,
               xi       = sam_xi,
@@ -141,10 +153,12 @@ u_boom_sampler <- function(A,
               m2       = sam_m2,
               m2_r2_s2 = sam_m2_r2_s2,
               m2_r2    = sam_m2_r2,
+              o2_s2    = sam_o2_s2,
               w        = sam_w,
               r2       = sam_r2,
               nu       = sam_nu,
               s2       = sam_s2,
               g        = sam_g,
-              pg       = sam_pg))
+              pg       = sam_pg,
+              D        = sam_D))
 }

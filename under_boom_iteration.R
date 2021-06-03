@@ -1,18 +1,18 @@
 # Fast Horse Shoe Sampler (For Big p and small n)
 
-under_boom_iteration <- function(y,
-                                 X,
-                                 xi,
-                                 v,
-                                 l2,
-                                 t2,
-                                 s2,
-                                 g,
-                                 e2,
-                                 h2,
-                                 m2,
-                                 M2,
-                                 K){
+u_boom_iteration <- function(y,
+                             X,
+                             xi,
+                             v,
+                             l2,
+                             t2,
+                             s2,
+                             g,
+                             e2,
+                             h2,
+                             m2,
+                             M2,
+                             K){
   #############################################################################
   # Set-Up
   #############################################################################

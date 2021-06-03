@@ -28,13 +28,13 @@ u_boom_iteration <- function(y,
   # Samples B and Theta
   #############################################################################
   # Prior Diagonal
-  temp1 <- c(t(t(l2) * g + (1 - g) * e2))
-  temp2 <- (m2 * (g %*% t(g)) + (1 - (g %*% t(g))) * o2)[lower.tri(m2)]
+  temp1 <- c(t2 * t(t(l2) * g + (1 - g) * e2))
+  temp2 <- (r2 * m2 * (g %*% t(g)) + (1 - (g %*% t(g))) * o2)[lower.tri(m2)]
   # print(t(t(l2) * g + (1 - g) * e2))
   # print((m2 * (g %*% t(g)) + (1 - (g %*% t(g))) * o2))
   # print(temp1)
   # print(temp2)
-  Lam   <- c(t2 * temp1, r2 * temp2)
+  Lam   <- c(temp1, temp2)
   # Fast Sampling
   b <- fast_sampler(Phi = X / sqrt(s2),
                     D   = s2 * Lam,
@@ -137,9 +137,9 @@ u_boom_iteration <- function(y,
   #############################################################################
   # Samples s2
   #############################################################################
-  temp1 <- c(t(t(l2) * g + (1 - g) * e2))
-  temp2 <- (m2 * (g %*% t(g)) + (1 - (g %*% t(g))) * o2)[lower.tri(m2)]
-  Lam   <- c(t2 * temp1, r2 * temp2)
+  temp1 <- c(t2 * t(t(l2) * g + (1 - g) * e2))
+  temp2 <- (r2 * m2 * (g %*% t(g)) + (1 - (g %*% t(g))) * o2)[lower.tri(m2)]
+  Lam   <- c(temp1, temp2)
   s2 <- 1 / rgamma(n     = 1,
                    shape = (n + P * V + P * (P - 1) / 2) / 2,
                    rate  = crossprod(x = y - X %*% b) / 2 +
@@ -149,35 +149,79 @@ u_boom_iteration <- function(y,
   # Samples g
   #############################################################################
   pg <- rep(0, P)
-  # for(i in 1:P){
-  #   p0   <- sum(dnorm(x    = B[, i],
-  #                     mean = 0,
-  #                     sd   = sqrt(s2 * e2),
-  #                     log  = TRUE)) + log(1/2) +
-  #     sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
-  #               mean = 0,
-  #               sd   = m2,
-  #               log  = TRUE))
-  #   p1   <- sum(dnorm(x    = B[, i],
-  #                     mean = 0,
-  #                     sd   = sqrt(s2 * t2 * l2[, i]),
-  #                     log  = TRUE)) + log(1/2) +
-  #     sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
-  #               mean = 0,
-  #               sd   = M2,
-  #               log  = TRUE))
-  #   p1   <- exp(sum(p1) - sum(p0))
-  #   if(is.finite(p1)){
-  #     p1 <- p1 / (p1 + 1)
-  #   } else {
-  #     p1 <- 1
-  #   }
-  #   g[i] <- rbinom(n    = 1,
-  #                  size = 1,
-  #                  prob = p1)
-  #   pg[i] <- p1
-  # }
-  g <- c(rep(1, QQ), rep(0, P - QQ))
+  for(i in 1:P){
+    # print(i)
+    # print(g)
+    # print('p0')
+    # print(sum(dnorm(x    = B[, i],
+    #             mean = 0,
+    #             sd   = sqrt(s2 * e2),
+    #             log  = TRUE)))
+    # print(sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
+    #                 mean = 0,
+    #                 sd   = sqrt(s2 * o2),
+    #                 log  = TRUE)))
+    # print(dnorm(x    = Theta[i, -i][g[-i] == 1],
+    #             mean = 0,
+    #             sd   = sqrt(s2 * o2),
+    #             log  = TRUE))
+    # print(sum(dnorm(x    = B[, i],
+    #                 mean = 0,
+    #                 sd   = sqrt(s2 * e2),
+    #                 log  = TRUE)) + log(1/2) +
+    #         sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
+    #                   mean = 0,
+    #                   sd   = sqrt(s2 * o2),
+    #                   log  = TRUE)))
+    p0   <- sum(dnorm(x    = B[, i],
+                      mean = 0,
+                      sd   = sqrt(s2 * e2),
+                      log  = TRUE)) + log(1/2) +
+      sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
+                mean = 0,
+                sd   = sqrt(s2 * o2),
+                log  = TRUE))
+    # print('p1')
+    # print(sum(dnorm(x    = B[, i],
+    #             mean = 0,
+    #             sd   = sqrt(s2 * t2 * l2[, i]),
+    #             log  = TRUE)))
+    # print(sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
+    #                 mean = 0,
+    #                 sd   = sqrt(s2 * r2 * m2[, i]),
+    #                 log  = TRUE)))
+    # print(dnorm(x    = Theta[i, -i][g[-i] == 1],
+    #             mean = 0,
+    #             sd   = sqrt(s2 * r2 * m2[-i, i][g[-i] == 1]),
+    #             log  = TRUE))
+    # print(sum(dnorm(x    = B[, i],
+    #                 mean = 0,
+    #                 sd   = sqrt(s2 * t2 * l2[, i]),
+    #                 log  = TRUE)) + log(1/2) +
+    #         sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
+    #                   mean = 0,
+    #                   sd   = sqrt(s2 * r2 * m2[, i]),
+    #                   log  = TRUE)))
+    p1   <- sum(dnorm(x    = B[, i],
+                      mean = 0,
+                      sd   = sqrt(s2 * t2 * l2[, i]),
+                      log  = TRUE)) + log(1/2) +
+      sum(dnorm(x    = Theta[i, -i][g[-i] == 1],
+                mean = 0,
+                sd   = sqrt(s2 * r2 * m2[-i, i][g[-i] == 1]),
+                log  = TRUE))
+    p1   <- exp(sum(p1) - sum(p0))
+    if(is.finite(p1)){
+      p1 <- p1 / (p1 + 1)
+    } else {
+      p1 <- 1
+    }
+    g[i] <- rbinom(n    = 1,
+                   size = 1,
+                   prob = p1)
+    pg[i] <- p1
+  }
+  # g <- c(rep(1, QQ), rep(0, P - QQ))
   #############################################################################
   # Returns the Samples
   #############################################################################
