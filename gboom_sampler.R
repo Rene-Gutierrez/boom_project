@@ -4,7 +4,9 @@ gboom_sampler <- function(y,
                           g,
                           s2,
                           r,
-                          S){
+                          S,
+                          R = 0,
+                          numIte = 2){
   # Problem Dimensions
   n <- dim(G)[1]  # Number of Observations
   V <- dim(G)[2]  # Voxel Size
@@ -23,18 +25,22 @@ gboom_sampler <- function(y,
   bM                <- matrix(data = 1:(P * V), nrow = V, ncol = P)
   
   # Samples
-  sam_B     <- array(data = NA, dim = c(S, V, P))
-  sam_Theta <- array(data = NA, dim = c(S, P, P))
-  sam_s2    <- numeric(length = S)
-  sam_l2B   <- array(data = NA, dim = c(S, V, P))
-  sam_t2B   <- numeric(length = S)
-  sam_vB    <- array(data = NA, dim = c(S, V, P))
-  sam_xiB   <- numeric(length = S)
-  sam_l2T   <- array(data = NA, dim = c(S, P, P))
-  sam_t2T   <- numeric(length = S)
-  sam_vT    <- array(data = NA, dim = c(S, P, P))
-  sam_xiT   <- numeric(length = S)
-  sam_g     <- matrix(data = NA, nrow = S, ncol = P)
+  sam_B         <- array(data = NA, dim = c(S, V, P))
+  sam_Theta     <- array(data = NA, dim = c(S, P, P))
+  sam_s2        <- numeric(length = S)
+  sam_l2B       <- array(data = NA, dim = c(S, V, P))
+  sam_l2_t2_s2B <- array(data = NA, dim = c(S, V, P))
+  sam_l2_t2B    <- array(data = NA, dim = c(S, V, P))
+  sam_t2B       <- numeric(length = S)
+  sam_vB        <- array(data = NA, dim = c(S, V, P))
+  sam_xiB       <- numeric(length = S)
+  sam_l2T       <- array(data = NA, dim = c(S, P, P))
+  sam_l2_t2_s2T <- array(data = NA, dim = c(S, P, P))
+  sam_l2_t2T    <- array(data = NA, dim = c(S, P, P))
+  sam_t2T       <- numeric(length = S)
+  sam_vT        <- array(data = NA, dim = c(S, P, P))
+  sam_xiT       <- numeric(length = S)
+  sam_g         <- matrix(data = NA, nrow = S, ncol = P)
   
   # Variable Initialization
   B     <- matrix(data = 0, nrow = V, ncol = P)
@@ -47,6 +53,8 @@ gboom_sampler <- function(y,
   t2T   <- 1
   vT    <- matrix(data = 1, nrow = P, ncol = P)
   xiT   <- 1
+  iniS2 <- s2
+  lg    <- g
   
   # Sampling
   # Progress Bar
@@ -57,6 +65,11 @@ gboom_sampler <- function(y,
                        width   = 72)
   for(s in 1:S){
     # Samples
+    if(s < R){
+      full <- FALSE
+    } else {
+      full <- TRUE
+    }
     out <- gboom_iterator(y      = y,
                           GX     = GX,
                           AX     = AX,
@@ -74,7 +87,10 @@ gboom_sampler <- function(y,
                           g      = g,
                           r      = r,
                           tM     = tM,
-                          bM     = bM)
+                          bM     = bM,
+                          full   = full,
+                          numIte = numIte)
+    # NumIte Update
     
     # Updates the Values
     B     <- out$B
@@ -90,19 +106,50 @@ gboom_sampler <- function(y,
     xiT   <- out$xiT
     g     <- out$g
     
+    # NumIte Update
+    # if(sum(lg != g) > 0){
+    #   numIte <- numIte + 1
+    # } else {
+    #   numIte <- numIte - 1
+    #   if(numIte < 1){
+    #     numIte <- 1
+    #   }
+    # }
+    lg    <- g
+    
     # Saves the Samples
-    sam_B[s,,]     <- B
-    sam_Theta[s,,] <- Theta
-    sam_s2[s]      <- s2
-    sam_l2B[s,,]   <- l2B
-    sam_t2B[s]     <- t2B
-    sam_vB[s,,]    <- vB
-    sam_xiB[s]     <- xiT
-    sam_l2T[s,,]   <- l2T
-    sam_t2T[s]     <- t2T
-    sam_vT[s,,]    <- vT
-    sam_xiT[s]     <- xiT
-    sam_g[s,]      <- g
+    sam_B[s,,]         <- B
+    sam_Theta[s,,]     <- Theta
+    sam_s2[s]          <- s2
+    sam_l2B[s,,]       <- l2B
+    sam_l2_t2_s2B[s,,] <- l2B * t2B * s2
+    sam_l2_t2B[s,,]    <- l2B * t2B
+    sam_t2B[s]         <- t2B
+    sam_vB[s,,]        <- vB
+    sam_xiB[s]         <- xiT
+    sam_l2T[s,,]       <- l2T
+    sam_l2_t2_s2T[s,,] <- l2T * t2T * s2
+    sam_l2_t2T[s,,]    <- l2T * t2T
+    sam_t2T[s]         <- t2T
+    sam_vT[s,,]        <- vT
+    sam_xiT[s]         <- xiT
+    sam_g[s,]          <- g
+    
+    # Re-Initialize
+    if(sum(g) == 0){
+      B     <- matrix(data = 0, nrow = V, ncol = P)
+      Theta <- matrix(data = 0, nrow = P, ncol = P)
+      l2B   <- matrix(data = 1, nrow = V, ncol = P)
+      t2B   <- 1
+      vB    <- matrix(data = 1, nrow = V, ncol = P)
+      xiB   <- 1
+      l2T   <- matrix(data = 1, nrow = P, ncol = P)
+      t2T   <- 1
+      vT    <- matrix(data = 1, nrow = P, ncol = P)
+      xiT   <- 1
+      s2    <- iniS2
+      g     <- rbinom(n = P, size = 1, prob = 1 / 10)
+    }
     
     # Progress Bar Update
     setTxtProgressBar(pb    = pb,
@@ -110,16 +157,20 @@ gboom_sampler <- function(y,
   }
   
   # Returns the Samples
-  return(list(B     = sam_B,
-              Theta = sam_Theta,
-              s2    = sam_s2,
-              g     = sam_g,
-              l2B   = sam_l2B,
-              t2B   = sam_t2B,
-              vB    = sam_vB,
-              xiB   = sam_xiB,
-              l2T   = sam_l2T,
-              t2T   = sam_t2T,
-              vT    = sam_vT,
-              xiT   = sam_xiT))
+  return(list(B         = sam_B,
+              Theta     = sam_Theta,
+              s2        = sam_s2,
+              g         = sam_g,
+              l2B       = sam_l2B,
+              l2_t2_s2B = sam_l2_t2_s2B,
+              l2_t2B    = sam_l2_t2B,
+              t2B       = sam_t2B,
+              vB        = sam_vB,
+              xiB       = sam_xiB,
+              l2T       = sam_l2T,
+              l2_t2_s2T = sam_l2_t2_s2T,
+              l2_t2T    = sam_l2_t2T,
+              t2T       = sam_t2T,
+              vT        = sam_vT,
+              xiT       = sam_xiT))
 }
