@@ -5,8 +5,10 @@ gboom_iterator <- function(y,
                            Theta,
                            s2,
                            l2B,
+                           r2B,
                            t2B,
                            vB,
+                           wB,
                            xiB,
                            l2T,
                            t2T,
@@ -26,7 +28,7 @@ gboom_iterator <- function(y,
   # Samples g (along with B and Theta)
   # Auxiliary Variables
   if(full){
-    LB <- t(t(l2B) * t2B)
+    LB <- t(t(l2B) * r2B) * t2B
     LT <- l2T * t2T
     per <- sample(1:P)
     for(p in per){
@@ -46,28 +48,6 @@ gboom_iterator <- function(y,
       Theta <- out$Theta
       B     <- out$B
       g     <- out$g
-  
-      # # Auxiliary Variables
-      # ipb <- c(bM[, g == 1])
-      # ipt <- tM[g == 1, g == 1]
-      # ipt <- ipt[lower.tri(ipt)]
-      # iqb <- c(bM[, g != 1])
-      # iqt <- seq(1, P * (P - 1) / 2)[-ipt]
-      #     
-      # # Samples B and Theta jointly given g
-      # X <- cbind(GX[, ipb], AX[, ipt])
-      # temp <- t(t2B * t(l2B))
-      # L <- c(temp[ipb], t2T * l2T[lower.tri(l2T)][ipt])
-      # # Jointly Fast Sampling of B and Theta
-      # b <- fast_sampler(Phi = X / sqrt(s2),
-      #                   D   = s2 * L,
-      #                   a   = y / sqrt(s2))
-      #
-      # # Updates B and Theta
-      # B[ ,g == 1]                  <- b[1:length(ipb)]
-      # Theta[upper.tri(Theta)]      <- 0
-      # Theta[lower.tri(Theta)][ipt] <- b[(length(ipb) + 1): length(c(ipb, ipt))]
-      # Theta <- Theta + t(Theta)
     }
   } else {
     g <- rep(1, P)
@@ -82,7 +62,7 @@ gboom_iterator <- function(y,
   
   # Samples B and Theta jointly given g
   X <- cbind(GX[, ipb], AX[, ipt])
-  temp <- t(t2B * t(l2B))
+  temp <- t(r2B * t(l2B)) * t2B
   L <- c(temp[ipb], t2T * l2T[lower.tri(l2T)][ipt])
   # Jointly Fast Sampling of B and Theta
   b <- fast_sampler(Phi = X / sqrt(s2),
@@ -100,7 +80,7 @@ gboom_iterator <- function(y,
     if(g[i] == 1){
       l2B[, i] <- 1 / rgamma(n     = V,
                              shape = 1,
-                             rate  = 1 / vB[, i] + B[, i]^2 / (2 * s2 * t2B[i]))
+                             rate  = 1 / vB[, i] + B[, i]^2 / (2 * s2 * r2B[i] * t2B))
     } else {
       l2B[, i] <- 1 / rgamma(n     = V,
                              shape = 1 / 2,
@@ -108,18 +88,31 @@ gboom_iterator <- function(y,
     }
   }
   
-  # Samples t2B
+  # Samples r2B
   for(i in 1:P){
     if(g[i] > 0){
-      t2B[i] <- 1 / rgamma(n     = 1,
+      r2B[i] <- 1 / rgamma(n     = 1,
                            shape = (V + 1) / 2,
-                           rate  = 1 / xiB +
-                             sum(B[, i]^2 / (2 * s2 * l2B[, i])))
+                           rate  = 1 / wB[i] +
+                             sum(B[, i]^2 / (2 * s2 * l2B[, i] * t2B)))
     } else {
-      t2B[i] <- 1 / rgamma(n     = 1,
+      r2B[i] <- 1 / rgamma(n     = 1,
                            shape = 1 / 2,
-                           rate  = 1 / xiB[i])
+                           rate  = 1 / wB[i])
     }
+    r2B[i] <- 1
+  }
+  
+  # Samples t2B
+  if(sum(g) > 0){
+    t2B <- 1 / rgamma(n     = 1,
+                      shape = (sum(g) * V + 1) / 2,
+                      rate  = 1 / xiB +
+                        sum(B^2 / (2 * s2 * t(t(l2B) * r2B))))
+  } else {
+    t2B <- 1 / rgamma(n     = 1,
+                      shape = 1 / 2,
+                      rate  = 1 / xiB)
   }
   
   # Samples v2B
@@ -128,8 +121,13 @@ gboom_iterator <- function(y,
                     rate  = 1 + 1 / c(l2B))
   vB <- matrix(data = vB, nrow = V, ncol = P)
   
+  # Samples w2B
+  wB  <- 1 / rgamma(n     = P,
+                    shape = 1,
+                    rate  = 1 + 1 / r2B)
+  
   # Samples xiB
-  xiB <- 1 / rgamma(n     = P,
+  xiB <- 1 / rgamma(n     = 1,
                     shape = 1,
                     rate  = 1 + 1 / t2B)
   
@@ -181,7 +179,7 @@ gboom_iterator <- function(y,
   Tv  <- Theta[lower.tri(Theta)]
   Bv  <- c(B)
   Q   <- sum(g)
-  lBv <- c(t(t2B * t(l2B)))
+  lBv <- c(t(r2B * t(l2B))) * t2B
   lTv <- t2T * l2T[lower.tri(l2T)]
   # Samples
   s2 <- 1 / rgamma(n     = 1,
@@ -193,6 +191,8 @@ gboom_iterator <- function(y,
   return(list(B     = B,
               l2B   = l2B,
               vB    = vB,
+              r2B   = r2B,
+              wB    = wB,
               t2B   = t2B,
               xiB   = xiB,
               Theta = Theta,

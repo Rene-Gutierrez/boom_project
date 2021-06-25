@@ -13,7 +13,7 @@ gboom_stats <- function(tTheta,
   
   if(flag){
     # True Positive Rate
-    TPR <- mean(g[, tg])
+    TPR <- mean(g[, tg == 1])
     TNR <- 1 - mean(g[, tg == 0])
   } else {
     TPR <- NA
