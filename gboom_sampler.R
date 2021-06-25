@@ -5,8 +5,7 @@ gboom_sampler <- function(y,
                           s2,
                           r,
                           S,
-                          R = 0,
-                          numIte = 2){
+                          R = 0){
   # Problem Dimensions
   n <- dim(G)[1]  # Number of Observations
   V <- dim(G)[2]  # Voxel Size
@@ -31,9 +30,9 @@ gboom_sampler <- function(y,
   sam_l2B       <- array(data = NA, dim = c(S, V, P))
   sam_l2_t2_s2B <- array(data = NA, dim = c(S, V, P))
   sam_l2_t2B    <- array(data = NA, dim = c(S, V, P))
-  sam_t2B       <- numeric(length = S)
+  sam_t2B       <- matrix(data = NA, nrow = S, ncol = P)
   sam_vB        <- array(data = NA, dim = c(S, V, P))
-  sam_xiB       <- numeric(length = S)
+  sam_xiB       <- matrix(data = NA, nrow = S, ncol = P)
   sam_l2T       <- array(data = NA, dim = c(S, P, P))
   sam_l2_t2_s2T <- array(data = NA, dim = c(S, P, P))
   sam_l2_t2T    <- array(data = NA, dim = c(S, P, P))
@@ -46,9 +45,9 @@ gboom_sampler <- function(y,
   B     <- matrix(data = 0, nrow = V, ncol = P)
   Theta <- matrix(data = 0, nrow = P, ncol = P)
   l2B   <- matrix(data = 1, nrow = V, ncol = P)
-  t2B   <- 1
+  t2B   <- rep(1, P)
   vB    <- matrix(data = 1, nrow = V, ncol = P)
-  xiB   <- 1
+  xiB   <- rep(1, P)
   l2T   <- matrix(data = 1, nrow = P, ncol = P)
   t2T   <- 1
   vT    <- matrix(data = 1, nrow = P, ncol = P)
@@ -88,9 +87,7 @@ gboom_sampler <- function(y,
                           r      = r,
                           tM     = tM,
                           bM     = bM,
-                          full   = full,
-                          numIte = numIte)
-    # NumIte Update
+                          full   = full)
     
     # Updates the Values
     B     <- out$B
@@ -106,25 +103,14 @@ gboom_sampler <- function(y,
     xiT   <- out$xiT
     g     <- out$g
     
-    # NumIte Update
-    # if(sum(lg != g) > 0){
-    #   numIte <- numIte + 1
-    # } else {
-    #   numIte <- numIte - 1
-    #   if(numIte < 1){
-    #     numIte <- 1
-    #   }
-    # }
-    lg    <- g
-    
     # Saves the Samples
     sam_B[s,,]         <- B
     sam_Theta[s,,]     <- Theta
     sam_s2[s]          <- s2
     sam_l2B[s,,]       <- l2B
-    sam_l2_t2_s2B[s,,] <- l2B * t2B * s2
-    sam_l2_t2B[s,,]    <- l2B * t2B
-    sam_t2B[s]         <- t2B
+    sam_l2_t2_s2B[s,,] <- t(t(l2B) * t2B) * s2
+    sam_l2_t2B[s,,]    <- t(t(l2B) * t2B)
+    sam_t2B[s,]        <- t2B
     sam_vB[s,,]        <- vB
     sam_xiB[s]         <- xiT
     sam_l2T[s,,]       <- l2T
@@ -140,9 +126,9 @@ gboom_sampler <- function(y,
       B     <- matrix(data = 0, nrow = V, ncol = P)
       Theta <- matrix(data = 0, nrow = P, ncol = P)
       l2B   <- matrix(data = 1, nrow = V, ncol = P)
-      t2B   <- 1
+      t2B   <- rep(1, P)
       vB    <- matrix(data = 1, nrow = V, ncol = P)
-      xiB   <- 1
+      xiB   <- rep(1, P)
       l2T   <- matrix(data = 1, nrow = P, ncol = P)
       t2T   <- 1
       vT    <- matrix(data = 1, nrow = P, ncol = P)
