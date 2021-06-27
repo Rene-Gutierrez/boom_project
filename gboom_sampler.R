@@ -14,7 +14,7 @@ gboom_sampler <- function(y,
   
   # Auxiliary Variables
   GX                <- G
-  dim(GX)           <- c(nn, V * P)
+  dim(GX)           <- c(n, V * P)
   AX                <- A
   dim(AX)           <- c(n, P * P)
   AX                <- AX[, lower.tri(A[1,,])]
