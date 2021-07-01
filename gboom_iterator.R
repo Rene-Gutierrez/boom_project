@@ -164,7 +164,7 @@ gboom_iterator <- function(y,
   # Samples vT
   out <- 1 / rgamma(n     = P * (P - 1) / 2,
                     shape = 1,
-                    rate  = 1 + 1 / l2B[lower.tri(l2B)])
+                    rate  = 1 + 1 / l2T[lower.tri(l2T)])
   vT[upper.tri(vT, diag = TRUE)] <- 0
   vT[lower.tri(vT)]              <- out
   vT                             <- vT + t(vT)
