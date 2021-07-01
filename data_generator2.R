@@ -9,17 +9,17 @@ data_generator2 <- function(P  = 10,
                             n  = 100){
   # Samples the Non-zero indicators
   gT <- rbinom(n = P, size = 1, prob = pT)
-  # if(sum(gT) == 0){
-  #   gT[1] <- 1
-  #   gT[2] <- 1
-  # } 
-  # if(sum(gT) == 1){
-  #   if(gT[1] == 0){
-  #     gT[1] <- 1
-  #   } else {
-  #     gT[2] <- 1
-  #   }
-  # }
+  if(sum(gT) == 0){
+    gT[1] <- 1
+    gT[2] <- 1
+  }
+  if(sum(gT) == 1){
+    if(gT[1] == 0){
+      gT[1] <- 1
+    } else {
+      gT[2] <- 1
+    }
+  }
   # if(sum(gT) == 0){
   #   gT[1] <- 1
   # }
