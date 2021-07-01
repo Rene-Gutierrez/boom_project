@@ -33,18 +33,27 @@ sim_boom <- function(PP = 20,
     
     # Estimation
     print("G-Boom")
-    tim1[i] <- Sys.time()
-    out1 <- gboom_sampler(y  = data_out$y,
-                          G  = data_out$G,
-                          A  = data_out$A,
-                          g  = rep(0, PP),
-                          s2 = 1,
-                          r  = 1 / 2,
-                          S  = S,
-                          R  = R)
-    tim1[i] <- Sys.time() - tim1[i]
-    sele[i,] <- rowMeans(out1$g[, data_out$gT == 1])
-    unse[i,] <- rowMeans(out1$g[, data_out$gT == 0])
+    tryCatch({
+      tim1[i] <- Sys.time()
+      out1 <- gboom_sampler(y  = data_out$y,
+                            G  = data_out$G,
+                            A  = data_out$A,
+                            g  = rep(0, PP),
+                            s2 = 1,
+                            r  = 1 / 2,
+                            S  = S,
+                            R  = R)
+      tim1[i] <- Sys.time() - tim1[i]
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")},
+    finally = {flag <- 1})
+    if(flag == 0){
+      sele[i,] <- rowMeans(out1$g[, data_out$gT == 1])
+      unse[i,] <- rowMeans(out1$g[, data_out$gT == 0])
+    } else {
+      tim1[i]  <- NA
+      sele[i,] <- NA
+      unse[i,] <- NA
+    }
     
     print("")
     print("Horseshoe")
@@ -56,13 +65,18 @@ sim_boom <- function(PP = 20,
     tim2[i]  <- Sys.time() - tim2[i]
     
     # Stats
-    sta1[[i]] <- gboom_stats(tTheta = data_out$Theta,
-                             tB     = data_out$B,
-                             tg     = data_out$gT,
-                             tgB    = data_out$gB,
-                             Theta  = out1$Theta[bI:S,,],
-                             B      = out1$B[bI:S,,],
-                             g      = out1$g[bI:S,])
+    if(flag == 0){
+      sta1[[i]] <- gboom_stats(tTheta = data_out$Theta,
+                               tB     = data_out$B,
+                               tg     = data_out$gT,
+                               tgB    = data_out$gB,
+                               Theta  = out1$Theta[bI:S,,],
+                               B      = out1$B[bI:S,,],
+                               g      = out1$g[bI:S,])
+    } else {
+      sta1[[i]] <- list()
+    }
+    
     
     sta2[[i]] <- gboom_stats(tTheta = data_out$Theta,
                              tB     = data_out$B,
@@ -81,11 +95,17 @@ sim_boom <- function(PP = 20,
                             s2    = data_out$s2,
                             n     = 100)
     
-    pre1[[i]] <- pre_stats(ty    = pre_dat$y,
-                           A     = pre_dat$A,
-                           G     = pre_dat$G,
-                           B     = out1$B[bI:S,,],
-                           Theta = out1$Theta[bI:S,,])
+    if(flag == 0){
+      pre1[[i]] <- pre_stats(ty    = pre_dat$y,
+                             A     = pre_dat$A,
+                             G     = pre_dat$G,
+                             B     = out1$B[bI:S,,],
+                             Theta = out1$Theta[bI:S,,])
+    } else {
+      pre1[[i]] <- list()
+      flag      <- 0
+    }
+    
     
     pre2[[i]] <- pre_stats(ty    = pre_dat$y,
                            A     = pre_dat$A,

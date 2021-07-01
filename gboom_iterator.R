@@ -65,14 +65,20 @@ gboom_iterator <- function(y,
   temp <- t(r2B * t(l2B)) * t2B
   L <- c(temp[ipb], t2T * l2T[lower.tri(l2T)][ipt])
   # Jointly Fast Sampling of B and Theta
-  b <- fast_sampler(Phi = X / sqrt(s2),
-                    D   = s2 * L,
-                    a   = y / sqrt(s2))
-  # Updates B and Theta
-  B[ ,g == 1]                  <- b[1:length(ipb)]
-  Theta[upper.tri(Theta)]      <- 0
-  Theta[lower.tri(Theta)][ipt] <- b[(length(ipb) + 1): length(c(ipb, ipt))]
-  Theta <- Theta + t(Theta)
+  tryCatch({b <- fast_sampler(Phi = X / sqrt(s2),
+                              D   = s2 * L,
+                              a   = y / sqrt(s2))},
+           error=function(e){cat("ERROR :",conditionMessage(e), "\n")},
+           finally = {flag <- 1})
+  if(flag == 0){
+    # Updates B and Theta
+    B[ ,g == 1]                  <- b[1:length(ipb)]
+    Theta[upper.tri(Theta)]      <- 0
+    Theta[lower.tri(Theta)][ipt] <- b[(length(ipb) + 1): length(c(ipb, ipt))]
+    Theta <- Theta + t(Theta)
+  } else {
+    flag <-  0
+  }
   
   # Horseshoe Structure for B
   # Samples l2B

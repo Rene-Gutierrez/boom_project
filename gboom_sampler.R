@@ -153,25 +153,27 @@ gboom_sampler <- function(y,
     # Progress Bar Update
     setTxtProgressBar(pb    = pb,
                       value = s / S)
+
   }
   
   # Returns the Samples
-  return(list(B            = sam_B,
-              Theta        = sam_Theta,
-              s2           = sam_s2,
-              g            = sam_g,
-              l2_r2_t2_s2B = sam_l2_r2_t2_s2B,
-              l2_r2_t2B    = sam_l2_r2_t2B,
-              l2_r2B       = sam_l2_r2B,
-              l2B          = sam_l2B,
-              r2B          = sam_r2B,
-              t2B          = sam_t2B,
-              vB           = sam_vB,
-              xiB          = sam_xiB,
-              l2_t2_s2T    = sam_l2_t2_s2T,
-              l2_t2T       = sam_l2_t2T,
-              l2T          = sam_l2T,
-              t2T          = sam_t2T,
-              vT           = sam_vT,
-              xiT          = sam_xiT))
+  output <- list(B            = sam_B,
+                 Theta        = sam_Theta,
+                 s2           = sam_s2,
+                 g            = sam_g,
+                 l2_r2_t2_s2B = sam_l2_r2_t2_s2B,
+                 l2_r2_t2B    = sam_l2_r2_t2B,
+                 l2_r2B       = sam_l2_r2B,
+                 l2B          = sam_l2B,
+                 r2B          = sam_r2B,
+                 t2B          = sam_t2B,
+                 vB           = sam_vB,
+                 xiB          = sam_xiB,
+                 l2_t2_s2T    = sam_l2_t2_s2T,
+                 l2_t2T       = sam_l2_t2T,
+                 l2T          = sam_l2T,
+                 t2T          = sam_t2T,
+                 vT           = sam_vT,
+                 xiT          = sam_xiT)
+  return(output)
 }
