@@ -14,7 +14,7 @@ source('./sta_lat.R')
 source('./sim_boom.R')
 
 # For Replicability
-set.seed(20062021)
+set.seed(26062021)
 
 print(paste0("1st Case"))
 sim_boom(pT = 0.2,
