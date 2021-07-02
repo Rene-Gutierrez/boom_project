@@ -21,39 +21,36 @@ sim_boom <- function(PP = 20,
   for(i in 1:N){
     # Tracker
     print(i)
+    nC <- 100
     # Data Generation
-    data_out <- data_generator2(P  = PP,
-                                V  = VV,
-                                pB = pB,
-                                pT = pT,
-                                cB = cB,
-                                cT = cT,
-                                s2 = ss,
-                                n  = nn)
+    while (nC > 24) {
+      print(paste0("Try "))
+      data_out <- data_generator2(P  = PP,
+                                  V  = VV,
+                                  pB = pB,
+                                  pT = pT,
+                                  cB = cB,
+                                  cT = cT,
+                                  s2 = ss,
+                                  n  = nn)
+      nC <- data_out$nC
+      print(nC)
+    }
     
     # Estimation
     print("G-Boom")
-    tryCatch({
-      tim1[i] <- Sys.time()
-      out1 <- gboom_sampler(y  = data_out$y,
-                            G  = data_out$G,
-                            A  = data_out$A,
-                            g  = rep(0, PP),
-                            s2 = 1,
-                            r  = 1 / 2,
-                            S  = S,
-                            R  = R)
-      tim1[i] <- Sys.time() - tim1[i]
-    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")},
-    finally = {flag <- 1})
-    if(flag == 0){
-      sele[i,] <- rowMeans(out1$g[, data_out$gT == 1])
-      unse[i,] <- rowMeans(out1$g[, data_out$gT == 0])
-    } else {
-      tim1[i]  <- NA
-      sele[i,] <- NA
-      unse[i,] <- NA
-    }
+    tim1[i] <- Sys.time()
+    out1 <- gboom_sampler(y  = data_out$y,
+                          G  = data_out$G,
+                          A  = data_out$A,
+                          g  = rep(0, PP),
+                          s2 = 1,
+                          r  = 1 / 2,
+                          S  = S,
+                          R  = R)
+    tim1[i]  <- Sys.time() - tim1[i]
+    sele[i,] <- rowMeans(out1$g[, data_out$gT == 1])
+    unse[i,] <- rowMeans(out1$g[, data_out$gT == 0])
     
     print("")
     print("Horseshoe")
@@ -64,19 +61,13 @@ sim_boom <- function(PP = 20,
                               S = S)
     tim2[i]  <- Sys.time() - tim2[i]
     
-    # Stats
-    if(flag == 0){
-      sta1[[i]] <- gboom_stats(tTheta = data_out$Theta,
-                               tB     = data_out$B,
-                               tg     = data_out$gT,
-                               tgB    = data_out$gB,
-                               Theta  = out1$Theta[bI:S,,],
-                               B      = out1$B[bI:S,,],
-                               g      = out1$g[bI:S,])
-    } else {
-      sta1[[i]] <- list()
-    }
-    
+    sta1[[i]] <- gboom_stats(tTheta = data_out$Theta,
+                             tB     = data_out$B,
+                             tg     = data_out$gT,
+                             tgB    = data_out$gB,
+                             Theta  = out1$Theta[bI:S,,],
+                             B      = out1$B[bI:S,,],
+                             g      = out1$g[bI:S,])
     
     sta2[[i]] <- gboom_stats(tTheta = data_out$Theta,
                              tB     = data_out$B,
@@ -95,17 +86,11 @@ sim_boom <- function(PP = 20,
                             s2    = data_out$s2,
                             n     = 100)
     
-    if(flag == 0){
-      pre1[[i]] <- pre_stats(ty    = pre_dat$y,
-                             A     = pre_dat$A,
-                             G     = pre_dat$G,
-                             B     = out1$B[bI:S,,],
-                             Theta = out1$Theta[bI:S,,])
-    } else {
-      pre1[[i]] <- list()
-      flag      <- 0
-    }
-    
+    pre1[[i]] <- pre_stats(ty    = pre_dat$y,
+                           A     = pre_dat$A,
+                           G     = pre_dat$G,
+                           B     = out1$B[bI:S,,],
+                           Theta = out1$Theta[bI:S,,])
     
     pre2[[i]] <- pre_stats(ty    = pre_dat$y,
                            A     = pre_dat$A,
@@ -115,12 +100,12 @@ sim_boom <- function(PP = 20,
   }
   
   suf <- paste0("_", pT, "_", VV, ".txt")
-  org <- org_sta(sta = list(sta1, sta2))
+  org <- org_sta(sta = list(sta1, sta2), filNam = paste0("per", suf))
   sta_lat(m = org$TR, se = org$TRSE, lab = org$TRLab, minmax = rep("max", 2), met = c("Boom", "Horseshoe"), dig = 2, filNam = paste0("tr", suf))
   sta_lat(m = org$LEN, se = org$LENSE, lab = org$LENLab, minmax = rep("min", 8), met = c("Boom", "Horseshoe"), dig = 3, filNam = paste0("len", suf))
   sta_lat(m = org$COV, se = org$COVSE, lab = org$MSELab, minmax = rep("max", 8), met = c("Boom", "Horseshoe"), dig = 3, filNam = paste0("cov", suf))
   sta_lat(m = org$MSE, se = org$MSESE, lab = org$MSELab, minmax = rep("min", 8), met = c("Boom", "Horseshoe"), dig = 2, filNam = paste0("mse", suf))
   
-  pre <- org_pre(pre = list(pre1, pre2))
+  pre <- org_pre(pre = list(pre1, pre2), filNam = paste0("per_pre", suf))
   sta_lat(m = pre$PRE, se = pre$PRESE, lab = pre$PRELab, minmax = c("min", "min", "max", "min"), met = c("Boom", "Horseshoe"), dig = 4, filNam = paste0("pre", suf))
 }

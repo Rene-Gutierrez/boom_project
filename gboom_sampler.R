@@ -174,6 +174,8 @@ gboom_sampler <- function(y,
                  l2T          = sam_l2T,
                  t2T          = sam_t2T,
                  vT           = sam_vT,
-                 xiT          = sam_xiT)
+                 xiT          = sam_xiT,
+                 GX           = GX,
+                 AX           = AX)
   return(output)
 }

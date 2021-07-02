@@ -73,7 +73,7 @@ data_generator2 <- function(P  = 10,
   }
   
   # Number of Coefficients in the Model
-  nC <- sum(Theta != 0) + sum(B != 0) 
+  nC <- sum(Theta != 0) / 2 + sum(B != 0) 
   
   # Returns the Data Generated
   return(list(gT    = gT,

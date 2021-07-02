@@ -1,4 +1,4 @@
-org_sta <- function(sta){
+org_sta <- function(sta, filNam){
   # Number of Procedures
   M <- length(sta)
   N <- length(sta[[1]])
@@ -16,6 +16,7 @@ org_sta <- function(sta){
   LEN    <- matrix(data = NA, nrow = M, ncol = 8)
   LENSE  <- matrix(data = NA, nrow = M, ncol = 8)
   LENLab <- c("Active", "Inactive", "All", "Active", "L. Inactive", "G. Inactive", "All", "All")
+  ind_sta <- c()
   for(m in 1:M){
     cur_sta <- sta[[m]]
     # TPR and FPR
@@ -137,8 +138,9 @@ org_sta <- function(sta){
     LENSE[m, 6] <- sd(lengzB)
     LENSE[m, 7] <- sd(lenB)
     LENSE[m, 8] <- sd(len)
+    ind_sta <- cbind(ind_sta, TPR, TNR, Mse, cov, len)
   }
-  
+  write.table(ind_sta, file = filNam, quote = FALSE)
   # Returns
   return(list(TR     = TR,
               TRSE   = TRSE,

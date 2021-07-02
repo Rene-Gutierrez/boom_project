@@ -1,4 +1,4 @@
-org_pre <- function(pre){
+org_pre <- function(pre, filNam){
   # Number of Procedures
   M <- length(pre)
   N <- length(pre[[1]])
@@ -8,6 +8,7 @@ org_pre <- function(pre){
   PRESE  <- matrix(data = NA, nrow = M, ncol = 4)
   PRELab <- c("MSE", "MSE \\%", "Cov", "Len")
   
+  ind_sta <- c()
   for(m in 1:M){
     cur_sta <- pre[[m]]
     # Stats
@@ -29,8 +30,9 @@ org_pre <- function(pre){
     PRESE[m, 2] <- sd(PMS) * 100
     PRESE[m, 3] <- sd(COV)
     PRESE[m, 4] <- sd(LEN)
+    ind_sta <- cbind(ind_sta, MSE, PMS, COV, LEN)
   }
-  
+  write.table(ind_sta, file = filNam, quote = FALSE)
   # Returns the Stats
   return(list(PRE   = PRE,
               PRESE = PRESE,
