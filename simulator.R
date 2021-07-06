@@ -15,6 +15,8 @@ source('./sim_boom.R')
 source('./mcp_estimation.R')
 source('./tra_sta.R')
 source('./tra_pre_stats.R')
+library(mclust)
+library(ncvreg)
 
 # For Replicability
 set.seed(29062021)
@@ -31,7 +33,7 @@ sim_boom(PP = 20,
          S  = 4000,
          bI = 2001,
          R  = 0,
-         N  = 100,
+         N  = 20,
          maxCoe = 50,
          m      = 10)
 
