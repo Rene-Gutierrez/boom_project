@@ -17,8 +17,34 @@ org_sta <- function(sta, filNam){
   LENSE  <- matrix(data = NA, nrow = M, ncol = 8)
   LENLab <- c("Active", "Inactive", "All", "Active", "L. Inactive", "G. Inactive", "All", "All")
   ind_sta <- c()
+  ROC    <- array(data = NA, dim = c(M, N, 2, dim(sta[[1]][[1]]$ROC)[2]))
   for(m in 1:M){
+    print(m)
     cur_sta <- sta[[m]]
+    if(m != 3){
+      # ROC
+      for(n in 1:N){
+        print(n)
+        print(dim(cur_sta[[n]]$ROC))
+        print(dim(ROC))
+        ROC[m, n, , ] <- cur_sta[[n]]$ROC
+      }
+      # Convergence Check
+      mR <- numeric(N)
+      for(n in 1:N){
+        mR[n] <- cur_sta[[n]]$mR
+      }
+      # Effective Sample Size
+      eff <- numeric(N)
+      for(n in 1:N){
+        eff[n] <- cur_sta[[n]]$avgEff
+      }
+      # Number of Coefficients
+      nC <- numeric(N)
+      for(n in 1:N){
+        nC[n] <- cur_sta[[n]]$nC
+      }
+    }
     # TPR and FPR
     TPR     <- numeric(N)
     TNR     <- numeric(N)
@@ -67,80 +93,84 @@ org_sta <- function(sta, filNam){
     MSESE[m, 7] <- sd(MseB)
     MSESE[m, 8] <- sd(Mse)
     
-    # Coverage
-    covNzT <- numeric(N)
-    covzT  <- numeric(N)
-    covT   <- numeric(N)
-    covNzB <- numeric(N)
-    covlzB <- numeric(N)
-    covgzB <- numeric(N)
-    covB   <- numeric(N)
-    cov    <- numeric(N)
-    for(n in 1:N){
-      covNzT[n] <- cur_sta[[n]]$covNzT
-      covzT[n]  <- cur_sta[[n]]$covzT
-      covT[n]   <- cur_sta[[n]]$covT
-      covNzB[n] <- cur_sta[[n]]$covNzB
-      covlzB[n] <- cur_sta[[n]]$covlzB
-      covgzB[n] <- cur_sta[[n]]$covgzB
-      covB[n]   <- cur_sta[[n]]$covB
-      cov[n]    <- cur_sta[[n]]$cov
+    if(m != 3){
+      # Coverage
+      covNzT <- numeric(N)
+      covzT  <- numeric(N)
+      covT   <- numeric(N)
+      covNzB <- numeric(N)
+      covlzB <- numeric(N)
+      covgzB <- numeric(N)
+      covB   <- numeric(N)
+      cov    <- numeric(N)
+      for(n in 1:N){
+        covNzT[n] <- cur_sta[[n]]$covNzT
+        covzT[n]  <- cur_sta[[n]]$covzT
+        covT[n]   <- cur_sta[[n]]$covT
+        covNzB[n] <- cur_sta[[n]]$covNzB
+        covlzB[n] <- cur_sta[[n]]$covlzB
+        covgzB[n] <- cur_sta[[n]]$covgzB
+        covB[n]   <- cur_sta[[n]]$covB
+        cov[n]    <- cur_sta[[n]]$cov
+      }
+      COV[m, 1]   <- mean(covNzT)
+      COV[m, 2]   <- mean(covzT)
+      COV[m, 3]   <- mean(covT)
+      COV[m, 4]   <- mean(covNzB)
+      COV[m, 5]   <- mean(covlzB)
+      COV[m, 6]   <- mean(covgzB)
+      COV[m, 7]   <- mean(covB)
+      COV[m, 8]   <- mean(cov)
+      COVSE[m, 1] <- sd(covNzT)
+      COVSE[m, 2] <- sd(covzT)
+      COVSE[m, 3] <- sd(covT)
+      COVSE[m, 4] <- sd(covNzB)
+      COVSE[m, 5] <- sd(covlzB)
+      COVSE[m, 6] <- sd(covgzB)
+      COVSE[m, 7] <- sd(covB)
+      COVSE[m, 8] <- sd(cov)
+      
+      # Length
+      lenNzT <- numeric(N)
+      lenzT  <- numeric(N)
+      lenT   <- numeric(N)
+      lenNzB <- numeric(N)
+      lenlzB <- numeric(N)
+      lengzB <- numeric(N)
+      lenB   <- numeric(N)
+      len    <- numeric(N)
+      for(n in 1:N){
+        lenNzT[n] <- cur_sta[[n]]$lenNzT
+        lenzT[n]  <- cur_sta[[n]]$lenzT
+        lenT[n]   <- cur_sta[[n]]$lenT
+        lenNzB[n] <- cur_sta[[n]]$lenNzB
+        lenlzB[n] <- cur_sta[[n]]$lenlzB
+        lengzB[n] <- cur_sta[[n]]$lengzB
+        lenB[n]   <- cur_sta[[n]]$lenB
+        len[n]    <- cur_sta[[n]]$len
+      }
+      LEN[m, 1]   <- mean(lenNzT)
+      LEN[m, 2]   <- mean(lenzT)
+      LEN[m, 3]   <- mean(lenT)
+      LEN[m, 4]   <- mean(lenNzB)
+      LEN[m, 5]   <- mean(lenlzB)
+      LEN[m, 6]   <- mean(lengzB)
+      LEN[m, 7]   <- mean(lenB)
+      LEN[m, 8]   <- mean(len)
+      LENSE[m, 1] <- sd(lenNzT)
+      LENSE[m, 2] <- sd(lenzT)
+      LENSE[m, 3] <- sd(lenT)
+      LENSE[m, 4] <- sd(lenNzB)
+      LENSE[m, 5] <- sd(lenlzB)
+      LENSE[m, 6] <- sd(lengzB)
+      LENSE[m, 7] <- sd(lenB)
+      LENSE[m, 8] <- sd(len)
     }
-    COV[m, 1]   <- mean(covNzT)
-    COV[m, 2]   <- mean(covzT)
-    COV[m, 3]   <- mean(covT)
-    COV[m, 4]   <- mean(covNzB)
-    COV[m, 5]   <- mean(covlzB)
-    COV[m, 6]   <- mean(covgzB)
-    COV[m, 7]   <- mean(covB)
-    COV[m, 8]   <- mean(cov)
-    COVSE[m, 1] <- sd(covNzT)
-    COVSE[m, 2] <- sd(covzT)
-    COVSE[m, 3] <- sd(covT)
-    COVSE[m, 4] <- sd(covNzB)
-    COVSE[m, 5] <- sd(covlzB)
-    COVSE[m, 6] <- sd(covgzB)
-    COVSE[m, 7] <- sd(covB)
-    COVSE[m, 8] <- sd(cov)
-    
-    # Length
-    lenNzT <- numeric(N)
-    lenzT  <- numeric(N)
-    lenT   <- numeric(N)
-    lenNzB <- numeric(N)
-    lenlzB <- numeric(N)
-    lengzB <- numeric(N)
-    lenB   <- numeric(N)
-    len    <- numeric(N)
-    for(n in 1:N){
-      lenNzT[n] <- cur_sta[[n]]$lenNzT
-      lenzT[n]  <- cur_sta[[n]]$lenzT
-      lenT[n]   <- cur_sta[[n]]$lenT
-      lenNzB[n] <- cur_sta[[n]]$lenNzB
-      lenlzB[n] <- cur_sta[[n]]$lenlzB
-      lengzB[n] <- cur_sta[[n]]$lengzB
-      lenB[n]   <- cur_sta[[n]]$lenB
-      len[n]    <- cur_sta[[n]]$len
-    }
-    LEN[m, 1]   <- mean(lenNzT)
-    LEN[m, 2]   <- mean(lenzT)
-    LEN[m, 3]   <- mean(lenT)
-    LEN[m, 4]   <- mean(lenNzB)
-    LEN[m, 5]   <- mean(lenlzB)
-    LEN[m, 6]   <- mean(lengzB)
-    LEN[m, 7]   <- mean(lenB)
-    LEN[m, 8]   <- mean(len)
-    LENSE[m, 1] <- sd(lenNzT)
-    LENSE[m, 2] <- sd(lenzT)
-    LENSE[m, 3] <- sd(lenT)
-    LENSE[m, 4] <- sd(lenNzB)
-    LENSE[m, 5] <- sd(lenlzB)
-    LENSE[m, 6] <- sd(lengzB)
-    LENSE[m, 7] <- sd(lenB)
-    LENSE[m, 8] <- sd(len)
-    ind_sta <- cbind(ind_sta, TPR, TNR, Mse, cov, len)
+    ind_sta <- cbind(ind_sta, TPR, TNR, Mse, cov, len, mR, eff, nC)
   }
-  write.table(ind_sta, file = filNam, quote = FALSE)
+  write.table(ind_sta, file = paste0(filNam, '.txt'), quote = FALSE)
+  saveRDS(ind_sta, file = paste0(filNam, '.rds'))
+  saveRDS(ROC, file = paste0("ROC_",filNam, '.rds'))
   # Returns
   return(list(TR     = TR,
               TRSE   = TRSE,

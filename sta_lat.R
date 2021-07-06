@@ -54,5 +54,5 @@ sta_lat <- function(m, se, lab, met, cap = "", minmax = 'min', sci = FALSE, dig 
   sta[7 + nSta + 2 + 2 * nMet + 4] <- "}\\end{table}"
   
   # Saves to file
-  write.table(sta, file = filNam, quote = FALSE, row.names = FALSE)
+  write.table(sta, file = paste0(filNam, ".txt"), quote = FALSE, row.names = FALSE)
 }

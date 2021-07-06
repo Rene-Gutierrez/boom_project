@@ -32,7 +32,8 @@ org_pre <- function(pre, filNam){
     PRESE[m, 4] <- sd(LEN)
     ind_sta <- cbind(ind_sta, MSE, PMS, COV, LEN)
   }
-  write.table(ind_sta, file = filNam, quote = FALSE)
+  write.table(ind_sta, file = paste0(filNam, ".txt"), quote = FALSE)
+  saveRDS(ind_sta, file = paste0(filNam, ".rds"))
   # Returns the Stats
   return(list(PRE   = PRE,
               PRESE = PRESE,
