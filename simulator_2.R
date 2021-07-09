@@ -23,11 +23,11 @@ set.seed(29062021)
 
 print(paste0("1st Case"))
 sim_boom(PP = 20,
-         VV = 15,
+         VV = 20,
          pB = 0.4,
          pT = 0.3,
-         cB = 5,
-         cT = 3,
+         cB = 3,
+         cT = 1,
          ss = 1,
          nn = 200,
          S  = 4000,
