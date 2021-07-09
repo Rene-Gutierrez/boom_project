@@ -4,20 +4,42 @@ gboom_stats <- function(tTheta,
                         tgB,
                         Theta,
                         B,
-                        g      = NA,
-                        flag   = TRUE){
+                        g       = NA,
+                        flag1   = TRUE,
+                        m,
+                        lag.max = 50,
+                        nC,
+                        cO = 1 - seq(0,1, length.out = 101)){
   # Dimensions
   S <- dim(B)[1]
   V <- dim(B)[2]
   P <- dim(B)[3]
   
-  if(flag){
+  if(flag1){
     # True Positive Rate
     TPR <- mean(g[, tg == 1])
     TNR <- 1 - mean(g[, tg == 0])
+    # ROC
+    ncO <- length(cO)
+    ROC <- matrix(data = NA, nrow = 2, ncol = ncO)
+    for(i in 1:ncO){
+      ROC[1, i] <- mean(colMeans(g[, tg == 1]) >  cO[i])
+      ROC[2, i] <- mean(colMeans(g[, tg == 0]) >= cO[i])
+    }
   } else {
-    TPR <- NA
-    TNR <- NA
+    # Cluster T
+    cluRes <- mclust::Mclust(data = abs(c(apply(Theta, c(2,3), mean))), G = 1:2, verbose = FALSE)
+    selT   <- colSums(matrix(cluRes$classification, P, P) == which.max(cluRes$parameters$mean)) > 0
+    # Cluster B
+    cluRes <- mclust::Mclust(data = abs(c(apply(B, c(2,3), mean))), G = 1:2, verbose = FALSE)
+    selB   <- colSums(matrix(cluRes$classification, V, P) == which.max(cluRes$parameters$mean)) > 0
+    # Final Selection
+    g      <- ((selT + selB) > 0) + 0
+    TPR <- mean(g[tg == 1])
+    TNR <- 1 - mean(g[tg == 0])
+    # ROC
+    ncO <- length(cO)
+    ROC <- matrix(data = NA, nrow = 2, ncol = ncO)
   }
   
   
@@ -113,6 +135,58 @@ gboom_stats <- function(tTheta,
   # Global Length
   len <- mean(c(uppB - lowB, uppT - lowT))
   
+  # Convergence Evaluation B
+  n   <- S / m
+  ind <- c(t(matrix(rep(1:m, n), nrow = m, ncol = n)))
+  mB  <- matrix(data = NA, nrow = m, ncol = P * V)
+  sB  <- matrix(data = NA, nrow = m, ncol = P * V)
+  for(i in 1:m){
+    miniB   <- vB[ind == i,]
+    mB[i, ] <- colMeans(miniB)
+    sB[i, ] <- apply(miniB, 2, var)
+  }
+  B_B      <- n * apply(mB, 2, var)
+  W_B      <- colMeans(sB)
+  varHat_B <- (n - 1) * W_B / n + 1 * B_B / n
+  R_B      <- sqrt(varHat_B / W_B)
+  mR_B     <- sqrt(((n - 1) * sum(W_B) / n + 1 * sum(B_B) / n) / sum(W_B))
+  
+  # Convergence Evaluation Theta
+  mT  <- matrix(data = NA, nrow = m, ncol = P * (P -1) / 2)
+  sT  <- matrix(data = NA, nrow = m, ncol = P * (P -1) / 2)
+  for(i in 1:m){
+    miniT   <- vT[ind == i,]
+    mT[i, ] <- colMeans(miniT)
+    sT[i, ] <- apply(miniT, 2, var)
+  }
+  B_T      <- n * apply(mT, 2, var)
+  W_T      <- colMeans(sT)
+  varHat_T <- (n - 1) * W_T / n + 1 * B_T / n
+  R_T      <- sqrt(varHat_T / W_T)
+  mR_T     <- sqrt(((n - 1) * sum(W_T) / n + 1 * sum(B_T) / n) / sum(W_T))
+  
+  mR <- (mR_B * (P * V) + mR_T * P * (P - 1) / 2) / (P * V + P * (P - 1) / 2)
+  
+  # Effective Number of Samples
+  vT      <- Theta
+  dim(vT) <- c(S, P * P)
+  vT      <- vT[, lower.tri(Theta[1,,])]
+  selT    <- ((tg %*% t(tg)) == 1)
+  selT    <- selT[lower.tri(selT)]
+  selT    <- vT[, selT]
+  vB      <- B
+  dim(vB) <- c(S, V * P)
+  selB    <- vB[, c(tgB == 1)]
+  selBT   <- cbind(selT, selB)
+  ncolS   <- dim(selBT)[2]
+  eff     <- numeric(length = ncolS)
+  for(i in 1:ncolS){
+    acfS   <- c(acf(x = selBT[, i], lag.max = lag.max, plot = FALSE)$acf)
+    cutOff <- which.max((acfS[1:lag.max] < 0) * (acfS[2:(lag.max + 1)] < 0))
+    sumACF <- sum(acfS[2:(cutOff + 1)])
+    effNum <- 1 + 2 * (sumACF)
+    eff[i] <- 1 / effNum 
+  }
   
   # Return Stats
   return(list(TPR    = TPR,
@@ -140,5 +214,19 @@ gboom_stats <- function(tTheta,
               lenlzB = lenlzB,
               lengzB = lengzB,
               lenB   = lenB,
-              len    = len))
+              len    = len,
+              R      = R,
+              varHat_B = varHat_B,
+              W_B    = W_B,
+              B_B    = B_B,
+              mR_B   = mR_B,
+              varHat_T = varHat_T,
+              W_T    = W_T,
+              B_T    = B_T,
+              mR_T   = mR_T,
+              mR     = mR,
+              eff    = eff,
+              avgEff = mean(eff),
+              nC     = nC,
+              ROC    = ROC))
 }
