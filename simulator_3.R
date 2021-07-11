@@ -23,9 +23,57 @@ set.seed(29062021)
 
 print(paste0("1st Case"))
 sim_boom(PP = 20,
+         VV = 20,
+         pB = 0.4,
+         pT = 0.25,
+         cB = 1,
+         cT = 1,
+         ss = 1,
+         nn = 150,
+         S  = 10000,
+         bI = 5001,
+         R  = 0,
+         N  = 100,
+         maxCoe = 100,
+         m      = 10)
+
+print(paste0("2nd Case"))
+sim_boom(PP = 20,
          VV = 15,
          pB = 0.4,
-         pT = 0.3,
+         pT = 0.25,
+         cB = 1,
+         cT = 1,
+         ss = 1,
+         nn = 150,
+         S  = 10000,
+         bI = 5001,
+         R  = 0,
+         N  = 100,
+         maxCoe = 100,
+         m      = 10)
+
+print(paste0("3rd Case"))
+sim_boom(PP = 20,
+         VV = 10,
+         pB = 0.4,
+         pT = 0.25,
+         cB = 1,
+         cT = 1,
+         ss = 1,
+         nn = 150,
+         S  = 10000,
+         bI = 5001,
+         R  = 0,
+         N  = 100,
+         maxCoe = 100,
+         m      = 10)
+
+print(paste0("4th Case"))
+sim_boom(PP = 20,
+         VV = 5,
+         pB = 0.4,
+         pT = 0.25,
          cB = 1,
          cT = 1,
          ss = 1,
