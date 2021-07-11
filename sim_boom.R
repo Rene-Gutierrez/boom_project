@@ -127,7 +127,7 @@ sim_boom <- function(PP = 20,
                                coe = out3$coe)
   }
   
-  suf <- paste0("_", pT, "_", pB, "_", VV, "_", PP, "_", nn, "_", cB, "_", cT, "_")
+  suf <- paste0("_", pT, "_", pB, "_", VV, "_", PP, "_", nn, "_", cB, "_", cT, "_", S)
   saveRDS(cbind(tim1, tim2, tim3), file = paste0("tim_", suf, '.rds'))
   org <- org_sta(sta = list(sta1, sta2, sta3), filNam = paste0("per", suf))
   sta_lat(m = org$TR, se = org$TRSE, lab = org$TRLab, minmax = rep("max", 2), met = c("Boom", "Horseshoe", "MCP"), dig = 2, filNam = paste0("tr", suf))
