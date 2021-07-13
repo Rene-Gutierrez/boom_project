@@ -29,7 +29,7 @@ for(i in 1:4){
            VV = 10,
            pB = 0.4,
            pT = pT[i],
-           cB = 0,
+           cB = 1,
            cT = 1,
            ss = 1,
            nn = 150,
