@@ -37,6 +37,6 @@ for(i in 1:4){
            bI = 5001,
            R  = 0,
            N  = 100,
-           maxCoe = 100,
+           maxCoe = 200,
            m      = 10)
 }
