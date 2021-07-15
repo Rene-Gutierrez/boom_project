@@ -21,14 +21,14 @@ library(ncvreg)
 # For Replicability
 set.seed(29062021)
 
-pT = c(0.2)
+VV = c(10, 15, 20)
 
-for(i in 1:4){
+for(i in 1:3){
   print(paste0("4th Case"))
   sim_boom(PP = 20,
-           VV = 30,
+           VV = VV[i],
            pB = 0.4,
-           pT = pT[i],
+           pT = 0.3,
            cB = 1,
            cT = 1,
            ss = 1,
@@ -38,5 +38,6 @@ for(i in 1:4){
            R  = 0,
            N  = 100,
            maxCoe = 100,
-           m      = 10)
+           m      = 10,
+           case   = 1)
 }
