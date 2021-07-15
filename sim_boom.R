@@ -11,7 +11,8 @@ sim_boom <- function(PP = 20,
                      R  = 0,
                      N  = 100,
                      maxCoe = 100,
-                     m      = 10){
+                     m      = 10,
+                     case   = 1){
   sta1 <- list()
   sta2 <- list()
   sta3 <- list()
@@ -37,7 +38,8 @@ sim_boom <- function(PP = 20,
                                   cB = cB,
                                   cT = cT,
                                   s2 = ss,
-                                  n  = nn)
+                                  n  = nn,
+                                  case = case)
       nC <- data_out$nC
       print(nC)
     }
@@ -127,7 +129,7 @@ sim_boom <- function(PP = 20,
                                coe = out3$coe)
   }
   
-  suf <- paste0("_", pT, "_", pB, "_", VV, "_", PP, "_", nn, "_", cB, "_", cT, "_", S)
+  suf <- paste0("_", pT, "_", pB, "_", VV, "_", PP, "_", nn, "_", cB, "_", cT, "_", S, "_", case)
   saveRDS(cbind(tim1, tim2, tim3), file = paste0("tim_", suf, '.rds'))
   org <- org_sta(sta = list(sta1, sta2, sta3), filNam = paste0("per", suf))
   sta_lat(m = org$TR, se = org$TRSE, lab = org$TRLab, minmax = rep("max", 2), met = c("Boom", "Horseshoe", "MCP"), dig = 2, filNam = paste0("tr", suf))
