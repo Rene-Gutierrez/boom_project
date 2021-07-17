@@ -19,14 +19,10 @@ org_sta <- function(sta, filNam){
   ind_sta <- c()
   ROC    <- array(data = NA, dim = c(M, N, 2, dim(sta[[1]][[1]]$ROC)[2]))
   for(m in 1:M){
-    print(m)
     cur_sta <- sta[[m]]
     if(m != 3){
       # ROC
       for(n in 1:N){
-        print(n)
-        print(dim(cur_sta[[n]]$ROC))
-        print(dim(ROC))
         ROC[m, n, , ] <- cur_sta[[n]]$ROC
       }
       # Convergence Check
