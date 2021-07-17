@@ -166,8 +166,14 @@ org_sta <- function(sta, filNam){
       LENSE[m, 7] <- sd(lenB)
       LENSE[m, 8] <- sd(len)
     }
-    ind_sta <- cbind(ind_sta, TPR, TNR, Mse, cov, len, mR, eff, nC)
+    ind_sta <- cbind(ind_sta,
+                     TPR, TNR,
+                     Mse, MseNzT, MsezT, MseT, MseNzB, MselzB, MsegzB, MseB,
+                     cov, covNzT, covzT, covT, covNzB, covlzB, covgzB, covB,
+                     len, lenNzT, lenzT, lenT, lenNzB, lenlzB, lengzB, lenB,
+                     mR, eff)
   }
+  ind_sta <- cbind(ind_sta, nC)
   write.table(ind_sta, file = paste0(filNam, '.txt'), quote = FALSE)
   saveRDS(ind_sta, file = paste0(filNam, '.rds'))
   saveRDS(ROC, file = paste0("ROC_",filNam, '.rds'))
